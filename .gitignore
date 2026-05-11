@@ -1,0 +1,15 @@
+.env
+token.json
+client_secrets.json
+.cache
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+
+# Personal data — keep folder visible via README, ignore everything else
+data/*
+!data/README.md
+exported playlists/*
+!exported playlists/README.md
