@@ -287,3 +287,30 @@ def test_word_matches_does_not_false_positive_wrong_length():
     # Verify it correctly rejects wrong length: f**k should not match funk if len differs.
     assert normalize("F**k") == "f__k"
     assert normalize("fu") != normalize("f__k")  # different lengths, no match
+
+
+# Diacritic / accent stripping
+def test_normalize_strips_diacritics():
+    assert normalize("Mýa") == "mya"
+    assert normalize("Beyoncé") == "beyonce"
+    assert normalize("Sigur Rós") == "sigur ros"
+
+
+def test_is_match_accented_artist_medium():
+    # Mýa — Exportify has stylized accent; YouTube uses plain "Mya"
+    assert is_match(
+        song_name="My Love Is Like...Wo",
+        artist="Mýa",
+        result_title="Mya - My Love Is Like...Wo (Unedited Version) (Official Music Video)",
+        channel_name="MyaVEVO",
+    )
+
+
+def test_is_match_accented_song_title():
+    # Accented characters in the song title should also normalize
+    assert is_match(
+        song_name="Déjà Vu",
+        artist="Olivia Rodrigo",
+        result_title="Olivia Rodrigo - deja vu (Official Video)",
+        channel_name="OliviaRodrigoVEVO",
+    )

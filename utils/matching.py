@@ -1,11 +1,17 @@
 import html
 import re
+import unicodedata
 
 STOPWORDS = {"a", "the", "an", "and", "of", "in", "is", "at"}
 
 
 def normalize(text: str) -> str:
     text = html.unescape(text)
+    # Strip diacritics so stylized artist/song spellings match plain ASCII
+    # YouTube titles (e.g. "Mýa" → "Mya", "Beyoncé" → "Beyonce").
+    text = "".join(
+        c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c)
+    )
     text = text.lower()
     # Preserve censored-word patterns (f**k, s**t) by replacing * runs between
     # letters with underscores before the punctuation strip — underscores survive
