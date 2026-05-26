@@ -18,7 +18,13 @@ import os
 import time
 from googleapiclient.errors import HttpError
 from utils.youtube_auth import get_youtube_client
-from utils.csv_ops import get_csv_path, read_playlist_csv, write_playlist_csv, upsert_summary
+from utils.csv_ops import (
+    get_csv_path,
+    read_playlist_csv,
+    write_playlist_csv,
+    upsert_summary,
+    lookup_summary_url,
+)
 from utils.rate_limit import QuotaTracker, QuotaExceededError
 from utils.cli import select_playlist
 
@@ -109,6 +115,13 @@ def process_csv(youtube, name, quota, resume_playlist_id=None):
         youtube, name, rows, quota, resume_playlist_id
     )
     if not playlist_id:
+        # Refresh summary from current CSV state so phase 4 doesn't show stale
+        # counts after phase 2 finds new matches but phase 3 can't add them
+        # (e.g. already-added rows present and no --resume-playlist-id given).
+        existing_url = lookup_summary_url(name)
+        if existing_url:
+            videos = sum(1 for r in rows if r.get("Added to YT Playlist") == "TRUE")
+            upsert_summary(name, len(rows), videos, existing_url)
         return None
     for row in rows:
         if row.get("Music Video Found") != "TRUE":

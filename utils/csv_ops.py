@@ -35,6 +35,17 @@ def write_playlist_csv(filepath: str, rows: list[dict]) -> None:
             writer.writerow({col: row.get(col, "") for col in PLAYLIST_COLUMNS})
 
 
+def lookup_summary_url(playlist_name: str) -> str | None:
+    """Return the YouTube playlist URL for an existing summary row, or None."""
+    if not os.path.exists(SUMMARY_FILE):
+        return None
+    with open(SUMMARY_FILE, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            if row.get("Playlist Name") == playlist_name:
+                return row.get("YouTube Playlist URL") or None
+    return None
+
+
 def upsert_summary(playlist_name: str, tracks: int, videos: int, youtube_url: str) -> None:
     """Add or update a playlist entry in data/summary.csv."""
     os.makedirs(os.path.dirname(SUMMARY_FILE), exist_ok=True)
