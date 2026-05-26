@@ -3,7 +3,7 @@
 ## Typical Workflow
 
 ### Step 1 — Download from Exportify (manual)
-1. Visit [exportify.net](https://exportify.net) and log in with Spotify
+1. Visit [exportify.net](https://exportify.net) and log in with Spotify. Note [Phase 1 Alternatives](#phase-1-alternatives).
 2. Download CSVs for new playlists
 3. Place them in the `exported playlists/` directory
 
@@ -48,7 +48,7 @@ python -m scripts.phase2_yt_search --playlist "Name" --daily-limit 5000
 
 Match strictness is set via `MATCH_STRICTNESS` in `.env`:
 
-| Value | Behaviour |
+| Value | Behavior |
 |-------|-----------|
 | `low` | Fuzzy song match only — all parenthetical content stripped from song name (e.g. `(Interlude)`, `(Album Version)`), then all unique remaining words must appear in the title (order-independent, handles compound words, no artist check) |
 | `medium` | Song title + any credited artist matches title or channel *(default)* |
@@ -114,3 +114,24 @@ Scripts estimate quota before each playlist and stop gracefully if insufficient.
 ## Re-authentication
 
 If YouTube auth expires or you need to force a new login, delete `token.json` and re-run any phase — it will prompt for OAuth login in your browser.
+
+
+# Phase 1 Alternatives
+
+Two alternative entry points to Phase 1 are included. Both require **Spotify API credentials** in `.env` (`SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`) — see [docs/Services Used.md](docs/Services%20Used.md) for app registration and redirect-URI setup.
+
+## `phase1_spotify.py` — Spotify Web API
+
+Reads playlists you own directly from the Spotify Web API, skipping the Exportify download. Writes pipeline-format CSVs to `data/playlists/`.
+
+```bash
+python -m scripts.phase1_spotify                  # interactive selection
+python -m scripts.phase1_spotify --playlist "Name"
+python -m scripts.phase1_spotify --all
+```
+
+Only works for playlists owned by your authenticated account — Spotify's 2024 API restrictions block reading third-party-owned playlists (see [docs/Playlist Access.md](docs/Playlist%20Access.md)). Optionally set `PLAYLIST_FOLDER` in `.env` to restrict the import to a single Spotify folder.
+
+## `phase1_musicleague.py` — Music League API (deprecated)
+
+Attempted integration with the Music League API. **Not currently functional** — the targeted endpoints appear to have been deprecated. Kept as a historical reference. Spotify API credentials in `.env` are still required because the script uses the Spotify API to fetch the actual track data after retrieving playlist IDs from Music League.

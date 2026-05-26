@@ -17,7 +17,7 @@ See [USAGE.md](USAGE.md) for full command reference, batching, resume options, a
 3. `pip install -r requirements.txt`
 4. First phase 2 run prompts for YouTube OAuth login in your browser
 
-## Key behaviour
+## Key behavior
 - **Resumable:** Scripts skip processed rows — safe to re-run after stopping.
 - **Match strictness:** `low`/`medium`/`high` via `MATCH_STRICTNESS` in `.env`. Medium is the default. `high` is artist-strict; official-music-video filtering is pending.
 - **Quota:** YouTube allows 10,000 units/day; usage persists in `data/quota_state.json` and resets automatically on a new day.

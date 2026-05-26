@@ -58,7 +58,7 @@ def main():
 
     strictness = os.getenv("MATCH_STRICTNESS", "medium").lower()
     if strictness not in ("low", "medium", "high"):
-        print(f"Warning: unrecognised MATCH_STRICTNESS '{strictness}', defaulting to 'medium'.")
+        print(f"Warning: unrecognized MATCH_STRICTNESS '{strictness}', defaulting to 'medium'.")
         strictness = "medium"
 
     print("\nConnecting to YouTube...")

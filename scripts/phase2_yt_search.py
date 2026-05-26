@@ -118,7 +118,7 @@ def main():
         selected_names = available if not chosen else chosen
     strictness = os.getenv("MATCH_STRICTNESS", "medium").lower()
     if strictness not in ("low", "medium", "high"):
-        print(f"Warning: unrecognised MATCH_STRICTNESS '{strictness}', defaulting to 'medium'.")
+        print(f"Warning: unrecognized MATCH_STRICTNESS '{strictness}', defaulting to 'medium'.")
         strictness = "medium"
     print("Connecting to YouTube...")
     youtube = get_youtube_client()
