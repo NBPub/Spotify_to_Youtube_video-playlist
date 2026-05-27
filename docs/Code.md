@@ -1,5 +1,13 @@
 # Code Architecture
 
+**Contents**
+
+- [Overview](#phase-overview)
+- [Utilities](#shared-utilities)
+- [Phase 1 alternatives](#phase-1-alternatives)
+- [Resumability](#resumability-and-quota)
+- [Data flow](#data-flow)
+
 The pipeline is structured as four discrete phases. Each phase is a standalone script in [`scripts/`](../scripts/) that reads from and writes to files on disk — no in-memory state is shared across phases. This makes every step resumable: re-running a phase skips rows that already have output.
 
 ## Phase overview
@@ -21,7 +29,7 @@ The [`utils/`](../utils/) package contains modules each phase pulls from:
 |--------|----------------|
 | [`csv_ops.py`](../utils/csv_ops.py) | Read/write pipeline CSVs |
 | [`cli.py`](../utils/cli.py) | Interactive and `--playlist`-driven playlist selection (case-insensitive) |
-| [`matching.py`](../utils/matching.py) | Normalisation, song/title comparison, strictness levels — see [Video Matching](Video%20Matching.md) |
+| [`matching.py`](../utils/matching.py) | Normalization, song/title comparison, strictness levels — see [Video Matching](Video%20Matching.md#video-matching) |
 | [`rate_limit.py`](../utils/rate_limit.py) | YouTube quota tracking, persistence across runs via `data/quota_state.json` |
 | [`youtube_auth.py`](../utils/youtube_auth.py) | YouTube OAuth client construction; surfaces a helpful message when `token.json` is expired |
 | [`spotify_auth.py`](../utils/spotify_auth.py) | Spotify PKCE client (used only by `phase1_spotify.py`) |
@@ -31,7 +39,7 @@ The [`utils/`](../utils/) package contains modules each phase pulls from:
 Three Phase 1 implementations exist, only one of which is the supported entry point:
 
 - **`phase1_exportify.py`** — Primary. Reads Exportify CSV exports. Works for any Spotify playlist regardless of owner.
-- **`phase1_spotify.py`** — Reads playlists directly via the Spotify Web API. Limited to playlists owned by the authenticated user under Spotify's 2024 API rules. See [Playlist Access](Playlist%20Access.md).
+- **`phase1_spotify.py`** — Reads playlists directly via the Spotify Web API. Limited to playlists owned by the authenticated user under Spotify's 2024 API rules. See [Playlist Access](Playlist%20Access.md#playlist-access--spotifys-2024-api-restrictions).
 - **`phase1_musicleague.py`** — Attempted Music League API integration; endpoints were found to be deprecated. Kept as a historical reference.
 
 ## Resumability and quota
@@ -47,39 +55,16 @@ YouTube quota is tracked in `data/quota_state.json` and **persists across runs o
 
 ### Mermaid
 
+The solid arrows show the primary Exportify-based flow. The dashed arrow shows the [Phase 1 alternative](#phase-1-alternatives) — `phase1_spotify.py` reads directly from the Spotify API and writes pipeline CSVs without an Exportify intermediate (user-owned playlists only).
+
 ```mermaid
 flowchart TD
     Spotify --> |"manual download<br/>via exportify.net"| Exp["exported playlists/*.csv"]
+    Spotify -.-> |"Phase 1 alternative<br/>phase1_spotify.py<br/>(user-owned playlists only)"| CSV
     Exp --> |"Phase 1<br/>phase1_exportify.py"| CSV["data/playlists/&lt;name&gt;.csv"]
     CSV --> |"Phase 2<br/>search.list"| YT["YouTube Data API"]
-    YT --> |"top 3 results<br/>matched + written back"| CSV
+    YT --> |"1 of top 3 results<br/>matched + written back"| CSV
     CSV --> |"Phase 3<br/>playlists.insert<br/>playlistItems.insert"| YT
     CSV --> |"Phase 3<br/>append row"| Summary["data/summary.csv"]
     Summary --> |"Phase 4<br/>phase4_summary.py"| Stdout["stdout"]
-```
-
-### ASCII version
-
-```
-                      Spotify
-                         │
-                         │  (manual download via exportify.net)
-                         ▼
-              exported playlists/*.csv
-                         │
-                         │  Phase 1
-                         ▼
-              data/playlists/<name>.csv
-                ┌────────┴────────┐
-                │                 │
-        Phase 2 │                 │ Phase 3
-                ▼                 ▼
-        YouTube Data API   YouTube Data API
-       (search.list)      (playlists.insert,
-                          playlistItems.insert)
-                │                 │
-                │                 ▼
-                │           data/summary.csv ──► Phase 4 ──► stdout
-                ▼
-   (same CSV updated with YouTube URLs)
 ```

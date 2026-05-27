@@ -9,7 +9,7 @@ Mirrors Spotify playlists as Unlisted YouTube playlists via [Exportify](https://
 4. `python -m scripts.phase3_yt_playlist --playlist "Name"` — create Unlisted playlist
 5. `python -m scripts.phase4_summary` — view summary
 
-See [USAGE.md](USAGE.md) for full command reference, batching, resume options, and quota details.
+See [USAGE.md](USAGE.md#usage-guide) for full command reference, batching, resume options, and quota details.
 
 ## Setup
 1. `cp .env.example .env` and set `MATCH_STRICTNESS` if desired
@@ -30,6 +30,8 @@ See [USAGE.md](USAGE.md) for full command reference, batching, resume options, a
 | `phase1_exportify.py` | `exported playlists/*.csv` | **Primary** — works for any Spotify playlist including third-party owned |
 | `phase1_spotify.py` | Spotify Web API | User-owned playlists only (post-2024 API restriction) |
 | `phase1_musicleague.py` | Music League API | Non-functional — endpoints appear deprecated |
+
+*Alternatives require Spotify API credentials in `.env`*
 
 ## Background
 

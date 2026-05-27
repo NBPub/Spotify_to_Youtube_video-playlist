@@ -9,9 +9,10 @@ A YouTube playlist plays in sequence in the browser, can be saved to your accoun
 
 ## Specific
 
-[Music League](https://musicleague.com) is a multi-round Spotify-based song-submission game. Each round, players submit tracks against a prompt and vote on each other's submissions. The resulting per-round playlists are owned by the Music League Spotify account and tend to be full of unfamiliar songs you've never heard before.
-
-This pipeline takes the Music League Spotify playlist and produces its YouTube equivalent so you can sit down and watch the round as a video collection.
+[Music League](https://musicleague.com) is a multi-round Spotify-based song-submission game. 
+Each round, players submit tracks against a prompt and vote on each other's submissions. 
+The resulting per-round playlists are owned by the Music League Spotify account and tend to be full of unfamiliar songs. 
+This pipeline takes the Music League Spotify playlist and produces its YouTube equivalent so you can watch the round as a video collection.
 
 The pipeline is not Music League-specific — it works on any Spotify playlist you can export.
 

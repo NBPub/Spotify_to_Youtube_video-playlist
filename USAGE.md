@@ -1,5 +1,14 @@
 # Usage Guide
 
+**Contents**
+
+- [Workflow](#typical-workflow)
+- [Phases](#individual-phases)
+- [Selection](#selection-options)
+- [Quota](#quota)
+- [Re-authentication](#re-authentication)
+- [Phase 1 Alternatives](#phase-1-alternatives)
+
 ## Typical Workflow
 
 ### Step 1 — Download from Exportify (manual)
@@ -20,6 +29,30 @@ python -m scripts.run_pipeline                   # interactive playlist selectio
 python -m scripts.run_pipeline --all             # all new playlists in exported playlists/
 python -m scripts.run_pipeline --daily-limit 5000  # custom quota budget (default: 9000)
 ```
+
+### Retrying Video Matching
+
+Songs that fail to find a suitable match — visible as `✗` lines in the console output of [phase 2](#phase-2--search-youtube-for-matching-videos) — can often be matched after lowering strictness. The process:
+
+1. **Lower the match strictness.** Edit `.env` and set `MATCH_STRICTNESS=low` (or `medium` if you were running on `high`).
+
+2. **Clear the row in the playlist CSV** at `data/playlists/<Name>.csv` for the unmatched track(s). Delete the values in two columns:
+   - `Music Video Found` (the `FALSE` marker that would otherwise cause the row to be skipped)
+   - `YouTube URL` (any partial state)
+
+   Phase 2 skips rows that already have any `Music Video Found` value, so emptying the cell is what forces a retry. This is safe — all phases are designed to be re-run, and rows you don't touch will continue to be skipped.
+
+3. **Re-run phase 2** on that playlist:
+   ```bash
+   python -m scripts.phase2_yt_search --playlist "Name"
+   ```
+   Only the cleared row(s) will be re-processed.
+
+4. **Add the newly matched video(s) to the existing YouTube playlist** by running phase 3 with `--resume-playlist-id`:
+   ```bash
+   python -m scripts.phase3_yt_playlist --playlist "Name" --resume-playlist-id <playlist_id>
+   ```
+   `<playlist_id>` is the `list=` value from the URL in `data/summary.csv`. Without `--resume-playlist-id`, phase 3 detects the existing `Added to YT Playlist = TRUE` rows and exits early to avoid creating a duplicate playlist.
 
 ---
 
@@ -118,7 +151,7 @@ If YouTube auth expires or you need to force a new login, delete `token.json` an
 
 # Phase 1 Alternatives
 
-Two alternative entry points to Phase 1 are included. Both require **Spotify API credentials** in `.env` (`SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`) — see [docs/Services Used.md](docs/Services%20Used.md) for app registration and redirect-URI setup.
+Two alternative entry points to Phase 1 are included. Both require **Spotify API credentials** in `.env` (`SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`) — see [docs/Services Used.md](docs/Services%20Used.md#services-used) for app registration and redirect-URI setup.
 
 ## `phase1_spotify.py` — Spotify Web API
 
@@ -130,7 +163,7 @@ python -m scripts.phase1_spotify --playlist "Name"
 python -m scripts.phase1_spotify --all
 ```
 
-Only works for playlists owned by your authenticated account — Spotify's 2024 API restrictions block reading third-party-owned playlists (see [docs/Playlist Access.md](docs/Playlist%20Access.md)). Optionally set `PLAYLIST_FOLDER` in `.env` to restrict the import to a single Spotify folder.
+Only works for playlists owned by your authenticated account — Spotify's 2024 API restrictions block reading third-party-owned playlists (see [docs/Playlist Access.md](docs/Playlist%20Access.md#playlist-access--spotifys-2024-api-restrictions)). Optionally set `PLAYLIST_FOLDER` in `.env` to restrict the import to a single Spotify folder.
 
 ## `phase1_musicleague.py` — Music League API (deprecated)
 
