@@ -11,7 +11,7 @@ Given Spotify API limitations, it makes use [Exportify](https://exportify.net) f
 
 > Created interactively with Claude Code and serves as a demonstration of my usage. Some code was manually reviewed, but only sparingly. Makes use of [superpowers](https://github.com/obra/superpowers) plugin.
 
-[MIT Licensed](LICENSE)
+[MIT Licensed](LICENSE) · [Contributing](CONTRIBUTING.md#contributing)
 
 **Contents**
 
